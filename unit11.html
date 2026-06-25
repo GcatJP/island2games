@@ -335,7 +335,11 @@
           display: flex;
         }
       }
-
+      @media (orientation: portrait) and (max-width: 430px) {
+        .face-front .word {
+          font-size: clamp(10px, 4vw, 25px);
+        }
+      }
       @media (orientation: portrait) {
         .rotate-msg {
           display: none;
