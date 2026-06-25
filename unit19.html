@@ -412,205 +412,207 @@
     </div>
 
     <script>
-      /* ---- PAIRS — replace with your real image paths / words ---- */
-      const PAIRS = [
-        { word: "1月", word2: "January" },
-        { word: "12月", word2: "December" },
-        { word: "水曜日", word2: "Wednesday" },
-        { word: "７月", word2: "July" },
-        { word: "木曜日", word2: "Thursday" },
-        { word: "日曜日", word2: "Sunday" },
-        { word: "3月", word2: "March" },
-        { word: "9月", word2: "September" },
-      ];
-      /* ---- audio ---- */
-      let audioCtx = null;
-      function getCtx() {
-        if (!audioCtx)
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        return audioCtx;
-      }
-      function playTone(freq, startTime, duration, gainPeak) {
-        const ctx = getCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "triangle";
-        osc.frequency.value = freq;
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        gain.gain.setValueAtTime(0, startTime);
-        gain.gain.linearRampToValueAtTime(gainPeak, startTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-        osc.start(startTime);
-        osc.stop(startTime + duration + 0.02);
-      }
-      function playMatchJingle() {
-        const ctx = getCtx(),
-          now = ctx.currentTime;
-        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
-          playTone(f, now + i * 0.09, 0.22, 0.22),
-        );
-      }
-      function playWrongSound() {
-        const ctx = getCtx(),
-          now = ctx.currentTime;
-        playTone(220, now, 0.18, 0.12);
-        playTone(196, now + 0.08, 0.18, 0.1);
-      }
-      function playWinFanfare() {
-        const ctx = getCtx(),
-          now = ctx.currentTime;
-        [523.25, 523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) =>
-          playTone(f, now + [0, 0.15, 0.3, 0.45, 0.6, 0.8][i], 0.3, 0.22),
-        );
-      }
+            /* ---- PAIRS — replace with your real image paths / words ---- */
+            const PAIRS = [
+              { word: "1月", word2: "January" },
+              { word: "12月", word2: "December" },
+              { word: "水曜日", word2: "Wednesday" },
+              { word: "７月", word2: "July" },
+              { word: "木曜日", word2: "Thursday" },
+              { word: "日曜日", word2: "Sunday" },
+              { word: "3月", word2: "March" },
+              { word: "9月", word2: "September" },
+            ];
+            /* ---- audio ---- */
+            let audioCtx = null;
+            function getCtx() {
+              if (!audioCtx)
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              return audioCtx;
+            }
+            function playTone(freq, startTime, duration, gainPeak) {
+              const ctx = getCtx();
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = "triangle";
+              osc.frequency.value = freq;
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              gain.gain.setValueAtTime(0, startTime);
+              gain.gain.linearRampToValueAtTime(gainPeak, startTime + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+              osc.start(startTime);
+              osc.stop(startTime + duration + 0.02);
+            }
+            function playMatchJingle() {
+              const ctx = getCtx(),
+                now = ctx.currentTime;
+              [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+                playTone(f, now + i * 0.09, 0.22, 0.22),
+              );
+            }
+            function playWrongSound() {
+              const ctx = getCtx(),
+                now = ctx.currentTime;
+              playTone(220, now, 0.18, 0.12);
+              playTone(196, now + 0.08, 0.18, 0.1);
+            }
+            function playWinFanfare() {
+              const ctx = getCtx(),
+                now = ctx.currentTime;
+              [523.25, 523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((f, i) =>
+                playTone(f, now + [0, 0.15, 0.3, 0.45, 0.6, 0.8][i], 0.3, 0.22),
+              );
+            }
 
-      /* ---- game state ---- */
-      let deck = [],
-        flippedCards = [],
-        matches = 0,
-        tries = 0,
-        locked = false;
+            /* ---- game state ---- */
+            let deck = [],
+              flippedCards = [],
+              matches = 0,
+              tries = 0,
+              locked = false;
 
-      function buildDeck() {
-        let cards = [];
-        PAIRS.forEach((p, idx) => {
-          cards.push({ pairId: idx, type: "word", value: p.word });
-          cards.push({ pairId: idx, type: "word", value: p.word2 });
-        });
-        for (let i = cards.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [cards[i], cards[j]] = [cards[j], cards[i]];
+            function buildDeck() {
+              let cards = [];
+              PAIRS.forEach((p, idx) => {
+                cards.push({ pairId: idx, type: "word", value: p.word });
+                cards.push({ pairId: idx, type: "word", value: p.word2 });
+              });
+              for (let i = cards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cards[i], cards[j]] = [cards[j], cards[i]];
+              }
+              return cards;
+            }
+
+            function render() {
+              const grid = document.getElementById("grid");
+              grid.innerHTML = "";
+              deck.forEach((card, i) => {
+                const el = document.createElement("div");
+                el.className = "card";
+                el.dataset.index = i;
+
+                const inner = document.createElement("div");
+                inner.className = "card-inner";
+
+                const back = document.createElement("div");
+                back.className = "face face-back";
+                back.textContent = i + 1;
+
+                const front = document.createElement("div");
+                front.className = "face face-front";
+                if (card.type === "image") {
+                  const img = document.createElement("img");
+                  img.src = card.value;
+                  img.alt = "";
+                  front.appendChild(img);
+                } } else {
+        const span = document.createElement("div");
+        span.className = "word";
+        if (/[\u3040-\u30ff\u4e00-\u9fff]/.test(card.value)) {
+          span.classList.add("word-jp");
         }
-        return cards;
+        span.textContent = card.value;
+        front.appendChild(span);
       }
+                inner.appendChild(back);
+                inner.appendChild(front);
+                el.appendChild(inner);
+                el.addEventListener("click", () => onCardClick(el, card));
+                grid.appendChild(el);
+              });
+            }
 
-      function render() {
-        const grid = document.getElementById("grid");
-        grid.innerHTML = "";
-        deck.forEach((card, i) => {
-          const el = document.createElement("div");
-          el.className = "card";
-          el.dataset.index = i;
+            function onCardClick(el, card) {
+              getCtx();
+              if (locked) return;
+              if (locked) return;
+              if (
+                el.classList.contains("flipped") ||
+                el.classList.contains("matched")
+              )
+                return;
+              if (flippedCards.length === 2) return;
 
-          const inner = document.createElement("div");
-          inner.className = "card-inner";
+              el.classList.add("flipped");
+              flippedCards.push({ el, card });
 
-          const back = document.createElement("div");
-          back.className = "face face-back";
-          back.textContent = i + 1;
+              if (flippedCards.length === 2) {
+                tries++;
 
-          const front = document.createElement("div");
-          front.className = "face face-front";
-          if (card.type === "image") {
-            const img = document.createElement("img");
-            img.src = card.value;
-            img.alt = "";
-            front.appendChild(img);
-          } else {
-            const span = document.createElement("div");
-            span.className = "word";
-            span.textContent = card.value;
-            front.appendChild(span);
-          }
+                locked = true;
+                const [a, b] = flippedCards;
+                if (a.card.pairId === b.card.pairId) {
+                  setTimeout(() => {
+                    a.el.classList.add("matched");
+                    b.el.classList.add("matched");
+                    spawnSparkles(a.el);
+                    spawnSparkles(b.el);
+                    playMatchJingle();
+                    matches++;
 
-          inner.appendChild(back);
-          inner.appendChild(front);
-          el.appendChild(inner);
-          el.addEventListener("click", () => onCardClick(el, card));
-          grid.appendChild(el);
-        });
-      }
+                    flippedCards = [];
+                    locked = false;
+                    if (matches === PAIRS.length) setTimeout(showWin, 600);
+                  }, 350);
+                } else {
+                  setTimeout(() => {
+                    a.el.classList.add("wrong");
+                    b.el.classList.add("wrong");
+                    playWrongSound();
+                  }, 250);
+                  setTimeout(() => {
+                    a.el.classList.remove("flipped", "wrong");
+                    b.el.classList.remove("flipped", "wrong");
+                    flippedCards = [];
+                    locked = false;
+                  }, 1000);
+                }
+              }
+            }
 
-      function onCardClick(el, card) {
-        getCtx();
-        if (locked) return;
-        if (locked) return;
-        if (
-          el.classList.contains("flipped") ||
-          el.classList.contains("matched")
-        )
-          return;
-        if (flippedCards.length === 2) return;
+            function spawnSparkles(el) {
+              const emojis = ["✨", "🌟", "🐚", "⭐"];
+              for (let i = 0; i < 5; i++) {
+                const s = document.createElement("div");
+                s.className = "sparkle";
+                s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 35 + Math.random() * 25;
+                s.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+                s.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
+                s.style.left = "50%";
+                s.style.top = "50%";
+                el.appendChild(s);
+                setTimeout(() => s.remove(), 950);
+              }
+            }
 
-        el.classList.add("flipped");
-        flippedCards.push({ el, card });
+            function showWin() {
+              document.getElementById("winStats").textContent =
+                `You matched all ${PAIRS.length} pairs in ${tries} tries!`;
+              document.getElementById("overlay").classList.add("show");
+              playWinFanfare();
+            }
+            let voiceOn = true;
 
-        if (flippedCards.length === 2) {
-          tries++;
-
-          locked = true;
-          const [a, b] = flippedCards;
-          if (a.card.pairId === b.card.pairId) {
-            setTimeout(() => {
-              a.el.classList.add("matched");
-              b.el.classList.add("matched");
-              spawnSparkles(a.el);
-              spawnSparkles(b.el);
-              playMatchJingle();
-              matches++;
-
+            function newGame() {
+              matches = 0;
+              tries = 0;
               flippedCards = [];
               locked = false;
-              if (matches === PAIRS.length) setTimeout(showWin, 600);
-            }, 350);
-          } else {
-            setTimeout(() => {
-              a.el.classList.add("wrong");
-              b.el.classList.add("wrong");
-              playWrongSound();
-            }, 250);
-            setTimeout(() => {
-              a.el.classList.remove("flipped", "wrong");
-              b.el.classList.remove("flipped", "wrong");
-              flippedCards = [];
-              locked = false;
-            }, 1000);
-          }
-        }
-      }
 
-      function spawnSparkles(el) {
-        const emojis = ["✨", "🌟", "🐚", "⭐"];
-        for (let i = 0; i < 5; i++) {
-          const s = document.createElement("div");
-          s.className = "sparkle";
-          s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-          const angle = Math.random() * Math.PI * 2;
-          const dist = 35 + Math.random() * 25;
-          s.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
-          s.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
-          s.style.left = "50%";
-          s.style.top = "50%";
-          el.appendChild(s);
-          setTimeout(() => s.remove(), 950);
-        }
-      }
+              document.getElementById("overlay").classList.remove("show");
+              deck = buildDeck();
+              render();
+            }
 
-      function showWin() {
-        document.getElementById("winStats").textContent =
-          `You matched all ${PAIRS.length} pairs in ${tries} tries!`;
-        document.getElementById("overlay").classList.add("show");
-        playWinFanfare();
-      }
-      let voiceOn = true;
-
-      function newGame() {
-        matches = 0;
-        tries = 0;
-        flippedCards = [];
-        locked = false;
-
-        document.getElementById("overlay").classList.remove("show");
-        deck = buildDeck();
-        render();
-      }
-
-      document.getElementById("resetBtn").addEventListener("click", newGame);
-      document
-        .getElementById("playAgainBtn")
-        .addEventListener("click", newGame);
-      newGame();
+            document.getElementById("resetBtn").addEventListener("click", newGame);
+            document
+              .getElementById("playAgainBtn")
+              .addEventListener("click", newGame);
+            newGame();
     </script>
   </body>
 </html>
