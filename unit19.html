@@ -395,7 +395,7 @@
     <div class="wrap">
       <div class="header">
         <a class="reset-btn" href="index.html">⬅️ Back</a>
-        <h1>Unit 1</h1>
+        <h1>Unit 19</h1>
         <button class="reset-btn" id="resetBtn">Play Again 🌴</button>
       </div>
 
@@ -414,16 +414,15 @@
     <script>
       /* ---- PAIRS — replace with your real image paths / words ---- */
       const PAIRS = [
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
-        { img: "images/.png", word: "" },
+        { word: "1月", word2: "January" },
+        { word: "12月", word2: "December" },
+        { word: "水曜日", word2: "Wednesday" },
+        { word: "７月", word2: "July" },
+        { word: "木曜日", word2: "Thursday" },
+        { word: "日曜日", word2: "Sunday" },
+        { word: "3月", word2: "March" },
+        { word: "9月", word2: "September" },
       ];
-
       /* ---- audio ---- */
       let audioCtx = null;
       function getCtx() {
@@ -476,8 +475,8 @@
       function buildDeck() {
         let cards = [];
         PAIRS.forEach((p, idx) => {
-          cards.push({ pairId: idx, type: "image", value: p.img });
           cards.push({ pairId: idx, type: "word", value: p.word });
+          cards.push({ pairId: idx, type: "word", value: p.word2 });
         });
         for (let i = cards.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
